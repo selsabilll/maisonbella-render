@@ -1,0 +1,293 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Détails du Produit{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    background: #f5f5f5;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 200;
+  }
+
+  .product-container {
+    display: flex;
+    gap: 30px;
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+    width: 90%;
+    margin: 40px auto;
+    padding: 30px;
+    transition: all 0.3s ease;
+  }
+  .product-container:hover { transform: translateY(-2px); }
+
+  .product-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    flex: 1;
+  }
+  .product-images img {
+    width: calc(50% - 10px);
+    height: auto;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .product-images img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+  }
+
+  /* Si une seule image, elle prend toute la largeur */
+  .product-images img:only-child {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .product-details {
+    min-width: 450px;
+    padding: 25px;
+    background-color: #ffffff;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  }
+  .product-details h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #1a1a1a;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 200;
+    text-decoration: none;
+  }
+  .product-details p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #555;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 200;
+  }
+  .product-details p strong { 
+    color: #1a1a1a; 
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 200;
+  }
+
+  .size-selector { 
+    margin-top: 25px; 
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 200;
+  }
+  .size-selector label {
+    font-weight: 200;
+    margin-bottom: 12px;
+    display: block;
+    color: #333;
+    font-family: 'Helvetica Neue', sans-serif;
+  }
+  .size-options { display: flex; gap: 12px; }
+  .size-option {
+    width: 42px;
+    height: 42px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 200;
+    transition: all 0.3s ease;
+    color: #333;
+    font-family: 'Helvetica Neue', sans-serif;
+    text-decoration: none;
+  }
+  .size-option:hover { border-color: #667eea; background-color: #e6eaff; }
+  .size-option.selected {
+    border-color: #667eea;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color: #fff;
+  }
+
+  .add-to-cart {
+    margin-top: 25px;
+    padding: 14px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    font-weight: 200;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+    font-family: 'Helvetica Neue', sans-serif;
+    text-decoration: none;
+  }
+  .add-to-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  }
+
+  @media(max-width:900px){
+    .product-container{flex-direction:column;width:95%;}
+    .product-details{min-width:unset;width:100%;}
+    .product-images img{width:100%;max-width:400px;}
+  }
+
+  /* Lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+  }
+  .lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  }
+  .lightbox.active { display: flex; }
+
+  /* Suppression des soulignements sur tous les liens */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+</style>
+
+<div class="product-container">
+  <div class="product-images">
+    {% if article.images.all %}
+      {% for image in article.images.all %}
+        <img src="{{ image.image.url }}" alt="{{ article.titre }}" class="product-image" loading="lazy" />
+      {% endfor %}
+    {% elif article.image_principale %}
+      <img src="{{ article.image_principale.image.url }}" alt="{{ article.titre }}" class="product-image" loading="lazy" />
+    {% else %}
+      <div style="padding: 50px; text-align: center; color: #999; font-family: 'Helvetica Neue', sans-serif; font-weight: 200;">
+        Aucune image disponible
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="product-details">
+    <div>
+      <h1>{{ article.titre }}</h1>
+      <p><strong>Prix :</strong> {{ article.prix }} DA</p>
+      {% if article.couleur %}
+      <p><strong>Couleur :</strong> {{ article.couleur }}</p>
+      {% endif %}
+      <p><strong>Référence :</strong> {{ article.id }}</p>
+
+      <div class="size-selector">
+        <label>Choisissez la taille :</label>
+        <div class="size-options">
+          <div class="size-option" data-size="XS">XS</div>
+          <div class="size-option" data-size="S">S</div>
+          <div class="size-option selected" data-size="M">M</div>
+          <div class="size-option" data-size="L">L</div>
+          <div class="size-option" data-size="XL">XL</div>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="add-to-cart" id="addToCartBtn">Ajouter au panier</button>
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox" class="lightbox">
+  <img src="" alt="{{ article.titre }}">
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const sizeOptions = document.querySelectorAll('.size-option');
+    let selectedSize = "M";
+    let isProcessing = false;
+
+    sizeOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            sizeOptions.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            selectedSize = opt.dataset.size;
+        });
+    });
+
+    addToCartBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        if(isProcessing) return;
+        isProcessing = true;
+
+        const productId = parseInt('{{ article.id }}');
+        const productName = '{{ article.titre|escapejs }}';
+        const price = parseFloat('{{ article.prix }}');
+        
+        // Utilise la première image disponible
+        let image = '';
+        {% if article.images.all %}
+          image = '{{ article.images.all.0.image.url }}';
+        {% elif article.image_principale %}
+          image = '{{ article.image_principale.image.url }}';
+        {% endif %}
+
+        addToLocalCart(productId, productName, selectedSize, price, image);
+        updateCartCounter();
+
+        setTimeout(()=>{ isProcessing = false; }, 500);
+    });
+
+    function addToLocalCart(id,name,size,price,image){
+        let cart = JSON.parse(localStorage.getItem('cart'))||[];
+        const existing = cart.find(item => item.id===id && item.size===size);
+        if(existing){
+            existing.quantity +=1;
+        } else {
+            cart.push({id,name,size,price,image,quantity:1});
+        }
+        localStorage.setItem('cart',JSON.stringify(cart));
+    }
+
+    function updateCartCounter(){
+        const cart = JSON.parse(localStorage.getItem('cart'))||[];
+        const totalItems = cart.reduce((sum,item)=>sum+(item.quantity||0),0);
+        const counters = document.querySelectorAll('#cartCount, .cart-count, .cart-badge');
+        counters.forEach(c=>{
+            c.textContent = totalItems;
+            c.style.display = totalItems>0?'inline':'none';
+        });
+    }
+
+    updateCartCounter();
+    window.addEventListener('storage',()=>updateCartCounter());
+
+    // --- Lightbox pour toutes les images ---
+    const productImages = document.querySelectorAll(".product-image");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = lightbox.querySelector("img");
+
+    productImages.forEach(img => {
+        img.addEventListener("click", () => {
+            lightboxImg.src = img.src;
+            lightbox.classList.add("active");
+        });
+    });
+
+    lightbox.addEventListener("click", () => {
+        lightbox.classList.remove("active");
+    });
+});
+</script>
+{% endblock %}

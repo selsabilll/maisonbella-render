@@ -1,0 +1,160 @@
+{% extends "main/base.html" %}
+
+{% block content %}
+<style>
+  .table-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    font-family: 'Inter', sans-serif;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background: #222;
+    color: #fff;
+  }
+
+  thead th {
+    padding: 14px 10px;
+    font-weight: 600;
+    text-align: left;
+    font-size: 14px;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+  }
+
+  tbody tr:hover {
+    background: #f9f9f9;
+  }
+
+  tbody td {
+    padding: 12px 10px;
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
+  }
+
+  /* Badges */
+  .badge-status {
+    display: inline-block;
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-nouveau {
+    background: #ffc107;
+    color: #000;
+  }
+  .status-assure {
+    background: #28a745;
+    color: #fff;
+  }
+
+  /* Boutons d’action */
+  .btn-action {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .btn-assurer {
+    background: #007bff;
+    color: white;
+  }
+  .btn-assurer:hover {
+    background: #0056b3;
+  }
+
+  /* Empty */
+  .empty-state {
+    text-align: center;
+    padding: 50px;
+    color: #888;
+  }
+  .empty-main-icon {
+    font-size: 40px;
+    display: block;
+    margin-bottom: 10px;
+  }
+</style>
+
+<div class="table-container">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Client</th>
+        <th>Contact</th>
+        <th>Wilaya</th>
+        <th>Commune</th>
+        <th>Livraison</th>
+        <th>Articles</th>
+        <th>Date & Heure</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cmd in commandes %}
+        <tr>
+          <td>
+            <div class="id-badge">#{{ cmd.id }}</div>
+          </td>
+          <td>{{ cmd.nom }} {{ cmd.prenom }}</td>
+          <td>{{ cmd.telephone }}</td>
+          <td>{{ cmd.get_wilaya_display }}</td>
+          <td>{{ cmd.commune }}</td>
+          <td>{{ cmd.get_type_livraison_display }}</td>
+          <td>
+            {% for ligne in cmd.lignes.all %}
+              <span class="badge badge-article">{{ ligne.article.titre }} ×{{ ligne.quantite }}</span><br>
+            {% empty %}
+              📦 Aucun article
+            {% endfor %}
+          </td>
+          <td>{{ cmd.date_commande|date:"d/m/Y H:i" }}</td>
+          <td>
+            {% if cmd.status == "Nouveau" %}
+              <span class="badge-status status-nouveau">🆕 Nouveau</span>
+            {% elif cmd.status == "Assuré" %}
+              <span class="badge-status status-assure">✅ Assuré</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if cmd.status == "Nouveau" %}
+              <a href="{% url 'assurer_commande' cmd.id %}" class="btn-action btn-assurer">Assurer</a>
+            {% else %}
+              ✅ Déjà assuré
+            {% endif %}
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="10">
+            <div class="empty-state">
+              <span class="empty-main-icon">📋</span>
+              <h3>Aucune commande disponible</h3>
+              <p>Les commandes apparaîtront ici une fois créées</p>
+            </div>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

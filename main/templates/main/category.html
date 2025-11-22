@@ -1,0 +1,170 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ category_name }}{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;700&display=swap');
+
+    body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background: white;
+        margin: 0;
+        padding: 0;
+    }
+
+    .product-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 30px;
+    }
+
+    .product-item {
+        background-color: #ffffff;
+        border-radius: 15px;
+        overflow: hidden;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 1px solid #e0e0e0;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+    }
+
+    .product-item:hover {
+        transform: translateY(-5px) scale(1.03);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        border-color: #cccccc;
+    }
+
+    .product-item a {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .slider {
+        position: relative;
+        width: 100%;
+        height: 350px;
+        overflow: hidden;
+    }
+
+    .slider img {
+        width: 100%;
+        height: 350px;
+        object-fit: cover;
+        display: none;
+    }
+
+    .slider img.active {
+        display: block;
+    }
+
+    .product-info {
+        padding: 12px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .product-info h2 {
+        font-family: 'Helvetica Neue', sans-serif;
+        font-size: 18px;
+        font-weight: 200;
+        color: #222222;
+        margin: 8px 0;
+    }
+
+    .product-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #555555;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 200;
+    }
+
+    .product-info p strong {
+        font-size: 16px;
+        color: #111111;
+        font-weight: 200;
+        font-family: 'Helvetica Neue', sans-serif;
+    }
+
+    .no-products {
+        font-size: 18px;
+        text-align: center;
+        color: #888888;
+        padding: 50px;
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 200;
+    }
+
+    @media (max-width: 768px) {
+        .product-item {
+            width: 90%;
+        }
+        .slider, .slider img {
+            height: 260px;
+        }
+    }
+</style>
+
+<div class="product-container">
+    {% if articles %}
+        {% for article in articles %}
+            <div class="product-item">
+                <a href="{% url 'orders' article.id %}">
+                    <div class="slider" id="slider-{{ article.id }}">
+                        {% if article.images.all.exists %}
+                            {% for image in article.images.all %}
+                                <img src="{{ image.image.url }}" alt="{{ article.titre }}" class="{% if forloop.first %}active{% endif %}">
+                            {% endfor %}
+                        {% elif article.image %}
+                            <img src="{{ article.image.url }}" alt="{{ article.titre }}" class="active">
+                        {% else %}
+                            <img src="https://via.placeholder.com/300x300?text=Image+indisponible" alt="Image non disponible" class="active">
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        <h2>{{ article.titre }}</h2>
+                        <p><strong>{{ article.prix }} DA</strong></p>
+                        {% if article.contenu %}
+                            <p>{{ article.contenu|truncatewords:15 }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-products">Aucun article publié pour le moment.</div>
+    {% endif %}
+</div>
+
+<script>
+function nextSlide(articleId) {
+    const slider = document.getElementById("slider-" + articleId);
+    const images = slider.querySelectorAll("img");
+    let current = Array.from(images).findIndex(img => img.classList.contains("active"));
+    images[current].classList.remove("active");
+    let next = (current + 1) % images.length;
+    images[next].classList.add("active");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const sliders = document.querySelectorAll(".slider");
+    sliders.forEach(slider => {
+        const articleId = slider.id.replace("slider-", "");
+        if (slider.querySelectorAll("img").length > 1) {
+            setInterval(() => {
+                nextSlide(articleId);
+            }, 3000);
+        }
+    });
+});
+</script>
+{% endblock %}

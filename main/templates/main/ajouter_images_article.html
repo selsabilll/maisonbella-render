@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 40px auto; padding: 20px;">
+    <h2>Ajouter des images à : {{ article.titre }}</h2>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="margin-bottom: 20px;">
+            <label>Sélectionner les images :</label>
+            <input type="file" name="images" multiple accept="image/*" required>
+        </div>
+        
+        <button type="submit" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
+            Ajouter les images
+        </button>
+        
+        <a href="{% url 'orders' article.id %}" style="margin-left: 10px;">Annuler</a>
+    </form>
+</div>
+{% endblock %}

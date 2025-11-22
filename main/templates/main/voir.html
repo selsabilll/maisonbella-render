@@ -1,0 +1,212 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Panier{% endblock %}
+
+{% block content %}
+<style>
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 200;
+    background: #fafafa;
+    margin: 0;
+    padding: 0;
+    color: #222;
+  }
+
+  .cart-container {
+    width: 400px;
+    max-width: 95%;
+    margin: 50px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 20px;
+  }
+
+  .cart-header {
+    font-size: 20px;
+    font-weight: 200;
+    margin-bottom: 20px;
+    text-align: center;
+    letter-spacing: 1px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .cart-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .cart-item img {
+    width: 80px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  .cart-item img:hover { transform: scale(1.05); }
+
+  .cart-info {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 200;
+  }
+
+  .cart-info p {
+    margin: 2px 0;
+    font-weight: 200;
+  }
+
+  .cart-info a {
+    color: #222;
+    text-decoration: none;
+    font-weight: 200;
+  }
+  .cart-info a:hover {
+    color: #2E86C1;
+  }
+
+  .qtyControls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .qtyControls button {
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 200;
+    text-decoration: none;
+  }
+  .qtyControls button:hover { background: #ddd; }
+
+  .qtyControls span {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 200;
+  }
+
+  .cart-footer {
+    text-align: right;
+    margin-top: 20px;
+    font-size: 16px;
+    font-weight: 200;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+
+  .checkout-btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    background: #F7E1D7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-decoration: none;
+    display: block;
+    text-align: center;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 200;
+  }
+  .checkout-btn:hover { background: #333; }
+
+  /* Suppression globale des soulignements */
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  @media(max-width:500px){
+    .cart-container { width: 95%; margin: 20px auto; padding: 15px; }
+    .cart-item { flex-direction: column; align-items: flex-start; }
+    .cart-item img { width: 100%; height: auto; max-width: 200px; }
+    .qtyControls { margin-top: 10px; }
+  }
+</style>
+
+<div class="cart-container">
+  <div class="cart-header">🛒 Votre Panier</div>
+  <div id="cart-items"></div>
+  <div class="cart-footer">
+    Total: <span id="cart-total">0 DA</span>
+  </div>
+  <button id="checkout-btn" class="checkout-btn">Passer la commande</button>
+</div>
+
+<script>
+  function renderCart() {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const cartItems = document.getElementById("cart-items");
+    cartItems.innerHTML = "";
+
+    cart.forEach((item, index) => {
+      // URL vers la page produit
+      const productUrl = "/orders/" + item.id + "/"; // adapte selon ton URL
+
+      // Image produit
+      const imageUrl = item.image ? item.image : "/static/images/default.png";
+
+      cartItems.innerHTML += `
+        <div class="cart-item">
+            <a href="${productUrl}"><img src="${imageUrl}" alt="${item.name}"></a>
+            <div class="cart-info">
+                <p><a href="${productUrl}"><strong>${item.name}</strong></a></p>
+                <p>Taille: ${item.size}</p>
+                <p>${parseFloat(item.price || 0).toFixed(2)} DA</p>
+                <div class="qtyControls">
+                    <button onclick="changeQty(${index}, -1)">-</button>
+                    <span>${item.quantity || 0}</span>
+                    <button onclick="changeQty(${index}, 1)">+</button>
+                    <button onclick="removeItem(${index})">🗑️</button>
+                </div>
+            </div>
+        </div>
+      `;
+    });
+
+    const total = cart.reduce((acc, item) => acc + (parseFloat(item.price || 0) * (item.quantity || 0)), 0);
+    document.getElementById("cart-total").innerText = total.toFixed(2) + " DA";
+  }
+
+  function changeQty(index, delta) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart[index].quantity += delta;
+    if (cart[index].quantity <= 0) cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    renderCart();
+  }
+
+  function removeItem(index) {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    cart.splice(index, 1);
+    localStorage.setItem("cart", JSON.stringify(cart));
+    renderCart();
+  }
+
+  document.getElementById("checkout-btn").addEventListener("click", () => {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    if (cart.length === 0) {
+      alert("Votre panier est vide !");
+      return;
+    }
+    window.location.href = "/commande/"; // redirection vers Django
+  });
+
+  document.addEventListener("DOMContentLoaded", renderCart);
+</script>
+{% endblock %}

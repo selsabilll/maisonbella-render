@@ -1,0 +1,1007 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Passer la commande</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background:#F7E1D7;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            color: #2c2c2c;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="90" cy="30" r="1" fill="rgba(255,255,255,0.05)"/></svg>');
+            z-index: -1;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+            align-items: flex-start;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 50px 45px;
+            border-radius: 30px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.1),
+                0 8px 25px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            flex: 1;
+            border: 1px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.1),
+                0 8px 25px rgba(0,0,0,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.8);
+            width: 400px;
+            border: 1px solid rgba(255,255,255,0.3);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .container::before, .cart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 35px;
+            color: #1a1a1a;
+            letter-spacing: -0.5px;
+            text-align: center;
+            position: relative;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+            text-align: center;
+            position: relative;
+        }
+
+        h1::after, h2::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+            background:black;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            display: block;
+            margin-bottom: 8px;
+            color: #4a4a4a;
+            letter-spacing: 0.3px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid rgba(0,0,0,0.08);
+            border-radius: 16px;
+            font-size: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(10px);
+            color: #2c2c2c;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #667eea;
+            outline: none;
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.15),
+                0 3px 10px rgba(102, 126, 234, 0.1);
+            background: rgba(255,255,255,0.95);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%23666" viewBox="0 0 16 16"><path d="M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-floating {
+            position: relative;
+        }
+
+        .form-floating input {
+            padding-top: 24px;
+            padding-bottom: 8px;
+        }
+
+        .form-floating label {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            color: #999;
+            background: transparent;
+        }
+
+        .form-floating input:focus + label,
+        .form-floating input:not(:placeholder-shown) + label {
+            top: 4px;
+            font-size: 12px;
+            color: pink;
+            font-weight: 500;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px 20px;
+            border: none;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            background: #EDAFB8;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-submit:hover:not(:disabled)::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 
+                0 15px 35px rgba(102, 126, 234, 0.4),
+                0 5px 15px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+        }
+
+        .btn-submit:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .btn-submit.loading {
+            pointer-events: none;
+        }
+
+        .btn-submit.loading::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Styles du panier */
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-image {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f8f9fa;
+            border: 2px solid rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .image-placeholder {
+            width: 70px;
+            height: 70px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #adb5bd;
+            flex-shrink: 0;
+        }
+
+        .cart-item-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+            font-size: 15px;
+            color: #2c2c2c;
+            line-height: 1.3;
+        }
+
+        .cart-item-details {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .cart-item-quantity {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .cart-item-price {
+            font-weight: 600;
+            color:#4A5759;
+            font-size: 15px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .quantity-badge {
+            position: absolute;
+            top: 12px;
+            left: 52px;
+            background: #6b7280;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .qty-btn:hover {
+            background: #f3f4f6;
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .qty-display {
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .remove-btn {
+            color: #ef4444;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        .remove-btn:hover {
+            background: #fef2f2;
+        }
+
+        .cart-summary {
+            background: #F7E1D7;
+            border: 2px solid rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .cart-summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .cart-summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 10px;
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            font-weight: 600;
+            font-size: 16px;
+            color: #1a1a1a;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-cart-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        .form-group.success input {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .form-group.error input {
+            border-color: #dc3545;
+            background: rgba(220, 53, 69, 0.05);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .cart-container {
+                width: 100%;
+                position: static;
+                order: -1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container, .cart-container {
+                padding: 35px 25px;
+                border-radius: 25px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+
+            .cart-item {
+                padding: 15px 0;
+            }
+
+            .cart-item-image, .image-placeholder {
+                width: 60px;
+                height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- Formulaire de commande -->
+    <div class="container">
+        <h1>Passer la commande</h1>
+
+        <form id="commandeForm" method="POST" action="{% url 'commande' %}">
+            {% csrf_token %}
+            <input type="hidden" name="cart_data" id="cart_data_input">
+            <input type="hidden" name="delivery_price" id="delivery_price_input">
+            
+            <div class="form-row">
+                <div class="form-group form-floating">
+                    <input type="text" id="nom" name="nom" placeholder=" " required>
+                    <label for="nom">Nom</label>
+                </div>
+                
+                <div class="form-group form-floating">
+                    <input type="text" id="prenom" name="prenom" placeholder=" " required>
+                    <label for="prenom">Prénom</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="adresse">Adresse complète</label>
+                <input type="text" id="adresse" name="adresse" required placeholder="Rue, numéro, quartier...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group form-floating">
+                    <input type="tel" id="telephone" name="telephone" placeholder=" " required pattern="[0-9]{10}">
+                    <label for="telephone">Téléphone</label>
+                    <div id="phoneError" class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="wilaya">Wilaya</label>
+                    <select id="wilaya" name="wilaya" required onchange="updateCommunes()">
+                        <option value="">Choisir une wilaya</option>
+                        <option value="01">01 - Adrar</option>
+                        <option value="02">02 - Chlef</option>
+                        <option value="03">03 - Laghouat</option>
+                        <option value="04">04 - Oum El Bouaghi</option>
+                        <option value="05">05 - Batna</option>
+                        <option value="06">06 - Béjaïa</option>
+                        <option value="07">07 - Biskra</option>
+                        <option value="08">08 - Béchar</option>
+                        <option value="09">09 - Blida</option>
+                        <option value="10">10 - Bouira</option>
+                        <option value="11">11 - Tamanrasset</option>
+                        <option value="12">12 - Tébessa</option>
+                        <option value="13">13 - Tlemcen</option>
+                        <option value="14">14 - Tiaret</option>
+                        <option value="15">15 - Tizi Ouzou</option>
+                        <option value="16" selected>16 - Alger</option>
+                        <option value="17">17 - Djelfa</option>
+                        <option value="18">18 - Jijel</option>
+                        <option value="19">19 - Sétif</option>
+                        <option value="20">20 - Saïda</option>
+                        <option value="21">21 - Skikda</option>
+                        <option value="22">22 - Sidi Bel Abbès</option>
+                        <option value="23">23 - Annaba</option>
+                        <option value="24">24 - Guelma</option>
+                        <option value="25">25 - Constantine</option>
+                        <option value="26">26 - Médéa</option>
+                        <option value="27">27 - Mostaganem</option>
+                        <option value="28">28 - M'Sila</option>
+                        <option value="29">29 - Mascara</option>
+                        <option value="30">30 - Ouargla</option>
+                        <option value="31">31 - Oran</option>
+                        <option value="32">32 - El Bayadh</option>
+                        <option value="33">33 - Illizi</option>
+                        <option value="34">34 - Bordj Bou Arréridj</option>
+                        <option value="35">35 - Boumerdès</option>
+                        <option value="36">36 - El Tarf</option>
+                        <option value="37">37 - Tindouf</option>
+                        <option value="38">38 - Tissemsilt</option>
+                        <option value="39">39 - El Oued</option>
+                        <option value="40">40 - Khenchela</option>
+                        <option value="41">41 - Souk Ahras</option>
+                        <option value="42">42 - Tipaza</option>
+                        <option value="43">43 - Mila</option>
+                        <option value="44">44 - Aïn Defla</option>
+                        <option value="45">45 - Naâma</option>
+                        <option value="46">46 - Aïn Témouchent</option>
+                        <option value="47">47 - Ghardaïa</option>
+                        <option value="48">48 - Relizane</option>
+                        <option value="49">49 - Timimoun</option>
+                        <option value="50">50 - Bordj Badji Mokhtar</option>
+                        <option value="51">51 - Ouled Djellal</option>
+                        <option value="52">52 - Béni Abbès</option>
+                        <option value="53">53 - In Salah</option>
+                        <option value="54">54 - In Guezzam</option>
+                        <option value="55">55 - Touggourt</option>
+                        <option value="56">56 - Djanet</option>
+                        <option value="57">57 - El M'Ghair</option>
+                        <option value="58">58 - El Meniaa</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="commune">Commune</label>
+                    <select id="commune" name="commune" required>
+                        <option value="">Choisir une commune</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="delivery_type">Type de livraison</label>
+                <select id="delivery_type" name="delivery_type" required onchange="renderCart()">
+                    <option value="home">Livraison à domicile</option>
+                    <option value="depot">Livraison au dépôt</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="passerCommande()" id="submitBtn">
+                Passer la commande
+            </button>
+        </form>
+    </div>
+    
+    <!-- Section droite - Résumé commande -->
+    <div class="cart-container">
+        <h2>Votre panier</h2>
+        <div id="cartItems"></div>
+        <div class="cart-summary">
+            <div class="cart-summary-row">
+                <span>Sous-total</span>
+                <span id="subtotal">0,00 DA</span>
+            </div>
+            <div class="cart-summary-row">
+                <span>Livraison</span>
+                <span id="delivery">0,00 DA</span>
+            </div>
+            <div class="cart-summary-row">
+                <span>Total</span>
+                <span id="cartTotal">0,00 DA</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    const deliveryPrices = {
+        "01": 800, // Adrar
+        "02": 600, // Chlef
+        "03": 700, // Laghouat
+        "04": 600, // Oum El Bouaghi
+        "05": 600, // Batna
+        "06": 500, // Béjaïa
+        "07": 600, // Biskra
+        "08": 800, // Béchar
+        "09": 400, // Blida
+        "10": 500, // Bouira
+        "11": 1000, // Tamanrasset
+        "12": 600, // Tébessa
+        "13": 600, // Tlemcen
+        "14": 600, // Tiaret
+        "15": 500, // Tizi Ouzou
+        "16": 300, // Alger
+        "17": 700, // Djelfa
+        "18": 500, // Jijel
+        "19": 500, // Sétif
+        "20": 600, // Saïda
+        "21": 500, // Skikda
+        "22": 600, // Sidi Bel Abbès
+        "23": 500, // Annaba
+        "24": 500, // Guelma
+        "25": 500, // Constantine
+        "26": 600, // Médéa
+        "27": 600, // Mostaganem
+        "28": 600, // M'Sila
+        "29": 600, // Mascara
+        "30": 800, // Ouargla
+        "31": 500, // Oran
+        "32": 800, // El Bayadh
+        "33": 1000, // Illizi
+        "34": 500, // Bordj Bou Arréridj
+        "35": 400, // Boumerdès
+        "36": 500, // El Tarf
+        "37": 1000, // Tindouf
+        "38": 600, // Tissemsilt
+        "39": 700, // El Oued
+        "40": 600, // Khenchela
+        "41": 600, // Souk Ahras
+        "42": 400, // Tipaza
+        "43": 500, // Mila
+        "44": 600, // Aïn Defla
+        "45": 800, // Naâma
+        "46": 600, // Aïn Témouchent
+        "47": 700, // Ghardaïa
+        "48": 600, // Relizane
+        "49": 800, // Timimoun
+        "50": 1000, // Bordj Badji Mokhtar
+        "51": 700, // Ouled Djellal
+        "52": 800, // Béni Abbès
+        "53": 1000, // In Salah
+        "54": 1000, // In Guezzam
+        "55": 700, // Touggourt
+        "56": 1000, // Djanet
+        "57": 700, // El M'Ghair
+        "58": 800  // El Meniaa
+    };
+
+    // Data structure for communes by wilaya
+    const communesByWilaya = {
+        "01": ["Adrar", "Aoulef", "Timimoun", "Reggane", "Tilrempt"],
+        "02": ["Chlef", "Ténès", "Ouled Fares", "El Karimia", "Oued Fodda"],
+        "03": ["Laghouat", "Ain Madhi", "Ksar El Hirane", "Oued Morra", "Sidi Makhlouf"],
+        "04": ["Oum El Bouaghi", "Ain Beida", "Ain M'lila", "Fkirina", "Meskiana"],
+        "05": ["Batna", "Arris", "Barika", "Merouana", "N'Gaous"],
+        "06": ["Béjaïa", "Akbou", "Amizour", "El Kseur", "Tazmalt"],
+        "07": ["Biskra", "Sidi Okba", "Tolga", "Zeribet El Oued", "Oumache"],
+        "08": ["Béchar", "Abadla", "Beni Ounif", "Kenadsa", "Taghit"],
+        "09": ["Blida", "Boufarik", "Chréa", "Larbaa", "Meftah"],
+        "10": ["Bouira", "Ain Bessem", "Lakhdaria", "M'Chedallah", "Sour El Ghozlane"],
+        "11": ["Tamanrasset", "In Salah", "In Guezzam", "Tin Zaouatine", "Tamanrasset (Ville)"],
+        "12": ["Tébessa", "Bir El Ater", "El Aouinet", "El Ogla", "Negrine"],
+        "13": ["Tlemcen", "Ain Tallout", "Beni Snous", "Hennaya", "Maghnia"],
+        "14": ["Tiaret", "Frenda", "Mahdia", "Medroussa", "Rechaiga"],
+        "15": ["Tizi Ouzou", "Azazga", "Boghni", "Draa Ben Khedda", "Mekla"],
+        "16": ["Alger", "Bab El Oued", "Birkhadem", "Bordj El Kiffan", "Dar El Beida"],
+        "17": ["Djelfa", "Ain Oussera", "Charef", "El Idrissia", "Messaad"],
+        "18": ["Jijel", "El Aouana", "Settat", "Taher", "Ziama Mansouriah"],
+        "19": ["Sétif", "Ain Arnat", "Ain Azel", "Babor", "El Eulma"],
+        "20": ["Saïda", "Ain El Hadjel", "El Hassasna", "Sidi Ahmed", "Youb"],
+        "21": ["Skikda", "Ain Kechra", "El Harrouch", "Kerkera", "Tamalous"],
+        "22": ["Sidi Bel Abbès", "Marhoum", "Moulay Slissen", "Sidi Brahim", "Telagh"],
+        "23": ["Annaba", "Ain Berda", "El Hadjar", "Seraidi", "Treat"],
+        "24": ["Guelma", "Ain Makhlouf", "Boumahra Ahmed", "Hammam N'bail", "Oued Zenati"],
+        "25": ["Constantine", "Ain Abid", "El Khroub", "Hamma Bouziane", "Zighoud Youcef"],
+        "26": ["Médéa", "Ain Boucif", "Berrouaghia", "Chellalat El Adhaoura", "Tablat"],
+        "27": ["Mostaganem", "Ain Nouissy", "Fornaka", "Hassi Mameche", "Sidi Lakhdar"],
+        "28": ["M'Sila", "Ain El Hadjel", "Ben Aknoun", "Maadid", "Sidi Aissa"],
+        "29": ["Mascara", "Ain Fares", "Ghriss", "Hacine", "Oued El Abtal"],
+        "30": ["Ouargla", "Ain Beida", "El Hadjira", "Rouissat", "Sidi Khouiled"],
+        "31": ["Oran", "Ain El Turk", "Arzew", "Bethioua", "Es Senia"],
+        "32": ["El Bayadh", "Ain El Orak", "Brezina", "Rogassa", "Sidi Ameur"],
+        "33": ["Illizi", "Bordj El Haouas", "Djanet", "In Amenas", "Illizi (Ville)"],
+        "34": ["Bordj Bou Arréridj", "Ain Taghrout", "Bordj Zemoura", "El Hamadia", "Ras El Oued"],
+        "35": ["Boumerdès", "Bordj Menaiel", "Dellys", "Isser", "Thenia"],
+        "36": ["El Tarf", "Ain El Assel", "Bouhadjar", "El Kala", "Souarekh"],
+        "37": ["Tindouf", "Oum El Assel", "Tindouf (Ville)"],
+        "38": ["Tissemsilt", "Beni Chaib", "Khemisti", "Lardjem", "Theniet El Had"],
+        "39": ["El Oued", "Debila", "Guemar", "Maghnia", "Reguiba"],
+        "40": ["Khenchela", "Ain Touila", "Bab El Assa", "El Hamma", "Ouled Rechache"],
+        "41": ["Souk Ahras", "Ain Zana", "Drea", "Heddada", "Sedrata"],
+        "42": ["Tipaza", "Ain Tagourait", "Bou Ismaïl", "Cherchell", "Kolea"],
+        "43": ["Mila", "Ain Tine", "Ferdjioua", "Grarem Gouga", "Oued Athmania"],
+        "44": ["Aïn Defla", "Ain Lechiakh", "Bathia", "El Abadia", "Miliana"],
+        "45": ["Naâma", "Ain Sefra", "Mecissi", "Naâma (Ville)"],
+        "46": ["Aïn Témouchent", "Ain El Arbaa", "El Malah", "Hammam Bou Hadjar", "Oulhassa"],
+        "47": ["Ghardaïa", "Berriane", "El Atteuf", "Metlili", "Zelfana"],
+        "48": ["Relizane", "Ain Rahma", "El Matmar", "Oued Rhiou", "Sidi M'Hamed Ben Ali"],
+        "49": ["Timimoun", "Aougrout", "Charouine", "Ksar Kaddour", "Timiaouine"],
+        "50": ["Bordj Badji Mokhtar", "Bordj Badji Mokhtar (Ville)"],
+        "51": ["Ouled Djellal", "Besbes", "Ouled Djellal (Ville)"],
+        "52": ["Béni Abbès", "Béni Abbès (Ville)", "Kerzaz", "Tamtert"],
+        "53": ["In Salah", "Foggaret Ezzaouia", "In Salah (Ville)"],
+        "54": ["In Guezzam", "In Guezzam (Ville)"],
+        "55": ["Touggourt", "Meggarine", "Nezla", "Taibet", "Touggourt (Ville)"],
+        "56": ["Djanet", "Djanet (Ville)", "Ghat"],
+        "57": ["El M'Ghair", "Djamaa", "El M'Ghair (Ville)"],
+        "58": ["El Meniaa", "El Meniaa (Ville)", "Hassi Fehal"]
+    };
+
+    // Tariffs for delivery types (adjust as needed)
+    const deliveryTypeTariffs = {
+        "home": (wilayaCode) => deliveryPrices[wilayaCode] || 0, // Full wilaya-based price for home delivery
+        "depot": (wilayaCode) => Math.max((deliveryPrices[wilayaCode] || 0) * 0.5, 200) // 50% of wilaya price or minimum 200 DA for depot
+    };
+
+    function loadCart() {
+        try {
+            const storedCart = localStorage.getItem('cart');
+            if (storedCart) {
+                cart = JSON.parse(storedCart);
+                cart = cart.filter(item => 
+                    item && item.name && item.price && item.quantity && item.quantity > 0
+                );
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement du panier:', error);
+            cart = [];
+            localStorage.removeItem('cart');
+        }
+    }
+
+    function saveCart() {
+        try {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        } catch (error) {
+            console.error('Erreur lors de la sauvegarde du panier:', error);
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+    }
+
+    function renderCart() {
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        const subtotal = document.getElementById('subtotal');
+        const delivery = document.getElementById('delivery');
+        
+        cartItems.innerHTML = '';
+
+        if (cart.length === 0) {
+            cartItems.innerHTML = `
+                <div class="empty-cart">
+                    <div class="empty-cart-icon">🛒</div>
+                    <p>Votre panier est vide</p>
+                </div>
+            `;
+            cartTotal.textContent = '0,00 DA';
+            subtotal.textContent = '0,00 DA';
+            delivery.textContent = '0,00 DA';
+            return;
+        }
+
+        let subtotalAmount = 0;
+        cart.forEach((item, index) => {
+            const imageUrl = item.image || '';
+            const itemPrice = parseFloat(item.price) || 0;
+            const itemQty = parseInt(item.quantity) || 0;
+            const itemSubtotal = itemPrice * itemQty;
+            subtotalAmount += itemSubtotal;
+
+            const itemName = escapeHtml(item.name || 'Article');
+            const itemSize = escapeHtml(item.size || '');
+
+            const itemElement = document.createElement('div');
+            itemElement.className = 'cart-item';
+            
+            const imageElement = imageUrl ? 
+                `<img src="${escapeHtml(imageUrl)}" alt="${itemName}" class="cart-item-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` : 
+                '';
+            const placeholderElement = `<div class="image-placeholder" style="${imageUrl ? 'display:none;' : ''}">👕</div>`;
+
+            itemElement.innerHTML = `
+                <div class="quantity-badge">${itemQty}</div>
+                ${imageElement}
+                ${placeholderElement}
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${itemName}</div>
+                    <div class="cart-item-details">Taille: ${itemSize}</div>
+                    <div class="qty-controls">
+                        <button type="button" class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
+                        <span class="qty-display">${itemQty}</span>
+                        <button type="button" class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        <button type="button" class="remove-btn" onclick="removeItem(${index})" title="Supprimer">🗑️</button>
+                    </div>
+                </div>
+                <div class="cart-item-price">${itemPrice.toFixed(2)} DA</div>
+            `;
+            cartItems.appendChild(itemElement);
+        });
+
+        const selectedWilaya = document.getElementById('wilaya').value;
+        const deliveryType = document.getElementById('delivery_type').value;
+        const deliveryPrice = selectedWilaya ? deliveryTypeTariffs[deliveryType](selectedWilaya) : 0;
+        const total = subtotalAmount + deliveryPrice;
+
+        subtotal.textContent = `${subtotalAmount.toFixed(2)} DA`;
+        delivery.textContent = `${deliveryPrice.toFixed(2)} DA`;
+        cartTotal.textContent = `${total.toFixed(2)} DA`;
+    }
+
+    function changeQty(index, delta) {
+        if (cart[index]) {
+            const newQty = (parseInt(cart[index].quantity) || 0) + delta;
+            if (newQty <= 0) {
+                cart.splice(index, 1);
+            } else {
+                cart[index].quantity = newQty;
+            }
+            saveCart();
+            renderCart();
+        }
+    }
+
+    function removeItem(index) {
+        if (confirm('Supprimer cet article du panier ?')) {
+            cart.splice(index, 1);
+            saveCart();
+            renderCart();
+        }
+    }
+
+    function validateForm() {
+        const phone = document.getElementById('telephone').value;
+        const phoneError = document.getElementById('phoneError');
+        const wilaya = document.getElementById('wilaya').value;
+        const commune = document.getElementById('commune').value;
+        const deliveryType = document.getElementById('delivery_type').value;
+        
+        const phoneRegex = /^0[5-7][0-9]{8}$/;
+        if (!phoneRegex.test(phone)) {
+            phoneError.textContent = 'Format incorrect. Ex: 0555123456';
+            return false;
+        }
+        if (!wilaya) {
+            alert('Veuillez sélectionner une wilaya.');
+            return false;
+        }
+        if (!commune) {
+            alert('Veuillez sélectionner une commune.');
+            return false;
+        }
+        if (!deliveryType) {
+            alert('Veuillez sélectionner un type de livraison.');
+            return false;
+        }
+        phoneError.textContent = '';
+        return true;
+    }
+
+    function passerCommande() { 
+        if (cart.length === 0) {
+            alert('Votre panier est vide !');
+            return;
+        }
+
+        if (!validateForm()) {
+            return;
+        }
+
+        const submitBtn = document.getElementById('submitBtn');
+        const form = document.getElementById('commandeForm');
+        const selectedWilaya = document.getElementById('wilaya').value;
+        const deliveryType = document.getElementById('delivery_type').value;
+        const deliveryPrice = selectedWilaya ? deliveryTypeTariffs[deliveryType](selectedWilaya) : 0;
+
+        try {
+            submitBtn.textContent = 'Envoi en cours...';
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+
+            document.getElementById('cart_data_input').value = JSON.stringify(cart);
+            document.getElementById('delivery_price_input').value = deliveryPrice;
+            localStorage.removeItem('cart');
+            cart = [];
+            
+            form.submit();
+            
+        } catch (error) {
+            console.error('Erreur lors de la soumission:', error);
+            alert('Une erreur est survenue. Veuillez réessayer.');
+            
+            submitBtn.textContent = 'Passer la commande';
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+        }
+    }
+
+    function updateCommunes() {
+        const wilayaSelect = document.getElementById('wilaya');
+        const communeSelect = document.getElementById('commune');
+        const selectedWilaya = wilayaSelect.value;
+
+        // Clear existing options
+        communeSelect.innerHTML = '<option value="">Choisir une commune</option>';
+
+        if (selectedWilaya && communesByWilaya[selectedWilaya]) {
+            communesByWilaya[selectedWilaya].forEach(commune => {
+                const option = document.createElement('option');
+                option.value = commune;
+                option.textContent = commune;
+                communeSelect.appendChild(option);
+            });
+        }
+
+        // Update delivery and total
+        renderCart();
+    }
+
+    // Validation en temps réel
+    document.getElementById('telephone').addEventListener
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCart();
+        renderCart();
+        // Trigger updateCommunes to populate communes for the default selected wilaya (Alger)
+        updateCommunes();
+    });
+</script>
+
+</body>
+</html>
